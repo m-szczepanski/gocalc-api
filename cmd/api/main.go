@@ -30,7 +30,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("API running on %s\n", port)
+		log.Printf("API running on %s", port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
