@@ -100,11 +100,7 @@ func DivideHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := calculations.Divide(req.A, req.B)
-	if err != nil {
-		writeErrorWithDetails(w, r, apierrors.DivisionByZero())
-		return
-	}
+	result, _ := calculations.Divide(req.A, req.B)
 
 	if err := writeSuccessResponse(w, r, models.MathResponse{Result: result}); err != nil {
 		// Error already logged, headers likely already sent

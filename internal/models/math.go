@@ -2,6 +2,22 @@ package models
 
 import "time"
 
+type TimeProvider interface {
+	Now() time.Time
+}
+
+type RealTimeProvider struct{}
+
+func (RealTimeProvider) Now() time.Time {
+	return time.Now().UTC()
+}
+
+var defaultTimeProvider TimeProvider = RealTimeProvider{}
+
+func SetTimeProvider(tp TimeProvider) {
+	defaultTimeProvider = tp
+}
+
 type MathRequest struct {
 	A float64 `json:"a"`
 	B float64 `json:"b"`
@@ -25,7 +41,7 @@ func NewAPIErrorResponse(code, message, details, requestID string) *APIErrorResp
 		Message:   message,
 		Details:   details,
 		RequestID: requestID,
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Timestamp: defaultTimeProvider.Now().Format(time.RFC3339),
 	}
 }
 
@@ -39,7 +55,7 @@ func NewSuccessResponse(data interface{}, requestID string) *SuccessResponse {
 	return &SuccessResponse{
 		Data:      data,
 		RequestID: requestID,
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Timestamp: defaultTimeProvider.Now().Format(time.RFC3339),
 	}
 }
 

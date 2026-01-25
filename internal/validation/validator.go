@@ -8,7 +8,6 @@ import (
 	"github.com/m-szczepanski/gocalc-api/internal/models"
 )
 
-// ValidateMathRequest validates a MathRequest for arithmetic operations.
 func ValidateMathRequest(req *models.MathRequest) *errors.APIError {
 	if req == nil {
 		return errors.InvalidInput("request body is required")
@@ -31,15 +30,16 @@ func ValidateMathRequest(req *models.MathRequest) *errors.APIError {
 	return nil
 }
 
-// ValidateDivisionRequest validates a MathRequest for division specifically.
-// It includes all standard validations plus division-specific checks.
 func ValidateDivisionRequest(req *models.MathRequest) *errors.APIError {
-	// Run standard validations first
 	if apiErr := ValidateMathRequest(req); apiErr != nil {
 		return apiErr
 	}
 
 	// Check for division by zero
+	// Simple equality check is sufficient because:
+	// 1. ValidateMathRequest already checked for Inf and NaN
+	// 2. Go's == operator treats -0.0 and +0.0 as equal
+	// 3. Very small values (e.g., 1e-308) are valid divisors in floating-point arithmetic
 	if req.B == 0 {
 		return errors.DivisionByZero()
 	}
@@ -47,7 +47,6 @@ func ValidateDivisionRequest(req *models.MathRequest) *errors.APIError {
 	return nil
 }
 
-// ValidateMethod validates that the HTTP method is allowed.
 func ValidateMethod(method, allowedMethod string) *errors.APIError {
 	if method != allowedMethod {
 		return errors.MethodNotAllowed(method)

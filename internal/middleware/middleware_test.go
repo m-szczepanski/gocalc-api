@@ -13,7 +13,7 @@ import (
 
 func TestRequestIDMiddleware(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestID := extractRequestID(r.Context())
+		requestID := ExtractRequestID(r.Context())
 		if requestID == "" || requestID == "unknown" {
 			t.Error("expected request ID in context, got empty or unknown")
 		}
@@ -27,14 +27,12 @@ func TestRequestIDMiddleware(t *testing.T) {
 
 	middleware.ServeHTTP(w, req)
 
-	// Check X-Request-ID header is set
 	requestID := w.Header().Get("X-Request-ID")
 	if requestID == "" {
 		t.Error("expected X-Request-ID header, got empty")
 	}
 
-	// Verify request ID is a valid hex string
-	if len(requestID) != 32 { // 16 bytes = 32 hex chars
+	if len(requestID) != 32 {
 		t.Errorf("expected request ID length 32, got %d", len(requestID))
 	}
 }
@@ -46,7 +44,6 @@ func TestRequestIDMiddleware_UniqueIDs(t *testing.T) {
 
 	middleware := RequestIDMiddleware(handler)
 
-	// Generate multiple request IDs
 	ids := make(map[string]bool)
 	for i := 0; i < 100; i++ {
 		req := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -75,7 +72,6 @@ func TestLoggingMiddleware(t *testing.T) {
 
 	middleware.ServeHTTP(w, req)
 
-	// Verify handler was called
 	if w.Code != http.StatusOK {
 		t.Errorf("expected status 200, got %d", w.Code)
 	}
@@ -113,14 +109,12 @@ func TestErrorHandler_WithPanic(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	// Should not panic, should recover and return 500
 	errorHandler.ServeHTTP(w, req)
 
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("expected status 500, got %d", w.Code)
 	}
 
-	// Verify error response structure
 	var resp models.APIErrorResponse
 	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
 		t.Fatalf("failed to decode error response: %v", err)
@@ -171,7 +165,6 @@ func TestResponseWriter_WriteHeader(t *testing.T) {
 		t.Error("expected written flag to be true")
 	}
 
-	// Try writing again - should be ignored
 	rw.WriteHeader(http.StatusBadRequest)
 	if rw.statusCode != http.StatusCreated {
 		t.Error("status code should not change after first write")
@@ -226,7 +219,7 @@ func TestExtractRequestID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := extractRequestID(tt.ctx)
+			result := ExtractRequestID(tt.ctx)
 			if result != tt.expected {
 				t.Errorf("expected %s, got %s", tt.expected, result)
 			}
@@ -237,12 +230,10 @@ func TestExtractRequestID(t *testing.T) {
 func TestGenerateRequestID(t *testing.T) {
 	id := generateRequestID()
 
-	// Should be 32 characters (16 bytes as hex)
 	if len(id) != 32 {
 		t.Errorf("expected request ID length 32, got %d", len(id))
 	}
 
-	// Should be valid hex
 	for _, c := range id {
 		if !strings.ContainsRune("0123456789abcdef", c) {
 			t.Errorf("invalid hex character in request ID: %c", c)
@@ -251,9 +242,8 @@ func TestGenerateRequestID(t *testing.T) {
 }
 
 func TestMiddlewareChain(t *testing.T) {
-	// Test that middleware can be chained together
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestID := extractRequestID(r.Context())
+		requestID := ExtractRequestID(r.Context())
 		if requestID == "" || requestID == "unknown" {
 			t.Error("request ID should be set by middleware")
 		}
@@ -261,7 +251,6 @@ func TestMiddlewareChain(t *testing.T) {
 		w.Write([]byte("ok"))
 	})
 
-	// Chain middleware
 	var h http.Handler = handler
 	h = RequestIDMiddleware(h)
 	h = LoggingMiddleware(h)

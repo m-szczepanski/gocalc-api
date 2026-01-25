@@ -35,7 +35,6 @@ func (eh *ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			// Log panic with stack trace for debugging
 			slog.Error("panic recovered",
 				"error", err,
 				"stack", string(debug.Stack()),
@@ -86,7 +85,7 @@ func RequestIDMiddleware(next http.Handler) http.Handler {
 
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestID := extractRequestID(r.Context())
+		requestID := ExtractRequestID(r.Context())
 		slog.Info("request received",
 			"request_id", requestID,
 			"method", r.Method,
@@ -98,17 +97,25 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 }
 
 func writeErrorResponse(w http.ResponseWriter, apiErr *apierrors.APIError, r *http.Request) {
-	requestID := extractRequestID(r.Context())
+	requestID := ExtractRequestID(r.Context())
 	statusCode := apiErr.HTTPStatus()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
 	resp := models.NewAPIErrorResponse(apiErr.Code, apiErr.Message, apiErr.Details, requestID)
-	encodeJSON(w, resp)
+	if err := encodeJSON(w, resp); err != nil {
+		slog.Error("failed to encode error response",
+			"error", err,
+			"request_id", requestID,
+			"status_code", statusCode,
+		)
+	}
 }
 
-func extractRequestID(ctx context.Context) string {
+// ExtractRequestID retrieves the request ID from context, or returns "unknown" if not found.
+// This is exported so other packages can access request IDs without duplicating logic.
+func ExtractRequestID(ctx context.Context) string {
 	requestID, ok := ctx.Value(RequestIDKey).(string)
 	if !ok {
 		return "unknown"
@@ -119,13 +126,11 @@ func extractRequestID(ctx context.Context) string {
 func generateRequestID() string {
 	bytes := make([]byte, 16)
 	if _, err := rand.Read(bytes); err != nil {
-		// Fallback to a simple timestamp-based ID if crypto/rand fails
 		return fmt.Sprintf("err-%d", fastTimestamp())
 	}
 	return hex.EncodeToString(bytes)
 }
 
-// fastTimestamp returns a simple timestamp-based fallback for request IDs
 func fastTimestamp() int64 {
 	return 0 // Will be replaced by actual timestamp if needed
 }
