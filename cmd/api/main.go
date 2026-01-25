@@ -21,6 +21,12 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", handlers.HealthHandler)
 
+	// Math endpoints
+	mux.HandleFunc("/api/math/add", handlers.AddHandler)
+	mux.HandleFunc("/api/math/subtract", handlers.SubtractHandler)
+	mux.HandleFunc("/api/math/multiply", handlers.MultiplyHandler)
+	mux.HandleFunc("/api/math/divide", handlers.DivideHandler)
+
 	server := &http.Server{
 		Addr:         port,
 		Handler:      mux,
