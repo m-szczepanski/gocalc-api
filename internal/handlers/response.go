@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	apierrors "github.com/m-szczepanski/gocalc-api/internal/errors"
@@ -31,13 +32,21 @@ func writeErrorWithDetails(w http.ResponseWriter, r *http.Request, apiErr *apier
 	json.NewEncoder(w).Encode(resp)
 }
 
+// writeSuccessResponse writes a successful response with request metadata.
 func writeSuccessResponse(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	requestID := extractRequestID(r.Context())
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
 	resp := models.NewSuccessResponse(data, requestID)
-	return json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		slog.Error("failed to encode success response",
+			"error", err,
+			"request_id", requestID,
+		)
+		return err
+	}
+	return nil
 }
 
 func extractRequestID(ctx context.Context) string {

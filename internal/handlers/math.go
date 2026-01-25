@@ -29,7 +29,10 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result := calculations.Add(req.A, req.B)
-	writeSuccessResponse(w, r, models.MathResponse{Result: result})
+	if err := writeSuccessResponse(w, r, models.MathResponse{Result: result}); err != nil {
+		// Error already logged, headers likely already sent
+		return
+	}
 }
 
 func SubtractHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +53,10 @@ func SubtractHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result := calculations.Subtract(req.A, req.B)
-	writeSuccessResponse(w, r, models.MathResponse{Result: result})
+	if err := writeSuccessResponse(w, r, models.MathResponse{Result: result}); err != nil {
+		// Error already logged, headers likely already sent
+		return
+	}
 }
 
 func MultiplyHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +77,10 @@ func MultiplyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result := calculations.Multiply(req.A, req.B)
-	writeSuccessResponse(w, r, models.MathResponse{Result: result})
+	if err := writeSuccessResponse(w, r, models.MathResponse{Result: result}); err != nil {
+		// Error already logged, headers likely already sent
+		return
+	}
 }
 
 func DivideHandler(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +106,10 @@ func DivideHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeSuccessResponse(w, r, models.MathResponse{Result: result})
+	if err := writeSuccessResponse(w, r, models.MathResponse{Result: result}); err != nil {
+		// Error already logged, headers likely already sent
+		return
+	}
 }
 
 func decodeJSONBody(body io.ReadCloser, target interface{}) error {

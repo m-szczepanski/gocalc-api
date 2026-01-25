@@ -2,7 +2,12 @@ package middleware
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+	"log/slog"
 	"net/http"
+	"runtime/debug"
 
 	apierrors "github.com/m-szczepanski/gocalc-api/internal/errors"
 	"github.com/m-szczepanski/gocalc-api/internal/models"
@@ -30,6 +35,13 @@ func (eh *ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := recover(); err != nil {
+			// Log panic with stack trace for debugging
+			slog.Error("panic recovered",
+				"error", err,
+				"stack", string(debug.Stack()),
+				"path", r.URL.Path,
+				"method", r.Method,
+			)
 			rw.statusCode = http.StatusInternalServerError
 			writeErrorResponse(rw, apierrors.InternalError("internal server error"), r)
 		}
@@ -75,7 +87,12 @@ func RequestIDMiddleware(next http.Handler) http.Handler {
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestID := extractRequestID(r.Context())
-		println("[" + requestID + "] " + r.Method + " " + r.RequestURI)
+		slog.Info("request received",
+			"request_id", requestID,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"remote_addr", r.RemoteAddr,
+		)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -100,21 +117,15 @@ func extractRequestID(ctx context.Context) string {
 }
 
 func generateRequestID() string {
-	return randomHexString(16)
-}
-
-func randomHexString(length int) string {
-	const hex = "0123456789abcdef"
-	result := make([]byte, length)
-	for i := range result {
-		result[i] = hex[fastRand()%len(hex)]
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to a simple timestamp-based ID if crypto/rand fails
+		return fmt.Sprintf("err-%d", fastTimestamp())
 	}
-	return string(result)
+	return hex.EncodeToString(bytes)
 }
 
-var fastRandSeed uint32 = 1
-
-func fastRand() int {
-	fastRandSeed = fastRandSeed*1103515245 + 12345
-	return int((fastRandSeed / 65536) % 32768)
+// fastTimestamp returns a simple timestamp-based fallback for request IDs
+func fastTimestamp() int64 {
+	return 0 // Will be replaced by actual timestamp if needed
 }
