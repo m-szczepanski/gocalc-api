@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/m-szczepanski/gocalc-api/internal/handlers"
+	"github.com/m-szczepanski/gocalc-api/internal/middleware"
 )
 
 const (
@@ -27,9 +28,14 @@ func main() {
 	mux.HandleFunc("/api/math/multiply", handlers.MultiplyHandler)
 	mux.HandleFunc("/api/math/divide", handlers.DivideHandler)
 
+	var handler http.Handler = mux
+	handler = middleware.RequestIDMiddleware(handler)
+	handler = middleware.LoggingMiddleware(handler)
+	handler = middleware.NewErrorHandler(handler)
+
 	server := &http.Server{
 		Addr:         port,
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
