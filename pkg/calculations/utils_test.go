@@ -2,6 +2,7 @@ package calculations
 
 import (
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -169,6 +170,10 @@ func TestCalculateBMI(t *testing.T) {
 				if err == nil {
 					t.Errorf("expected error but got none")
 					return
+				}
+				// Assert error message contains expected substring
+				if tt.errorMessage != "" && !strings.Contains(err.Error(), tt.errorMessage) {
+					t.Errorf("expected error to contain %q, got %q", tt.errorMessage, err.Error())
 				}
 				return
 			}

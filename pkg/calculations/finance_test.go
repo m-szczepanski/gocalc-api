@@ -371,7 +371,7 @@ func TestCalculateLoanPayment(t *testing.T) {
 			years:            5.0,
 			paymentsPerYear:  12,
 			expectedPayment:  166.67,
-			expectedTotal:    10000.20,
+			expectedTotal:    10000.0,
 			expectedInterest: 0.0,
 			expectError:      false,
 		},

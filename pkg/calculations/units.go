@@ -2,6 +2,7 @@ package calculations
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -162,6 +163,8 @@ func (r *UnitRegistry) GetValidUnits(unitType UnitType) []string {
 	for unit := range typeConversions {
 		units = append(units, unit)
 	}
+	// Sort for deterministic output in error messages
+	sort.Strings(units)
 	return units
 }
 

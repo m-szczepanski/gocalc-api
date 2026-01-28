@@ -367,7 +367,7 @@ func TestLoanPaymentHandler(t *testing.T) {
 			},
 			expectedStatus:   http.StatusOK,
 			expectedPayment:  166.67,
-			expectedTotal:    10000.20,
+			expectedTotal:    10000.0,
 			expectedInterest: 0,
 			expectError:      false,
 		},
