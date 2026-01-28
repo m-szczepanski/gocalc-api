@@ -51,7 +51,7 @@ This makes the API:
 ## Project Structure
 
 ```text
-calcforge/
+gocalc-api/
 ├── cmd/
 │   └── api/
 │       └── main.go        # Application entry point
