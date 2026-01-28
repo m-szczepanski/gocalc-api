@@ -571,3 +571,280 @@ func TestValidateLoanPaymentRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateBMIRequest(t *testing.T) {
+	tests := []struct {
+		name         string
+		req          *models.BMIRequest
+		expectError  bool
+		expectedCode string
+	}{
+		{
+			name: "valid request with kg and m",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "kg",
+				Height:     1.75,
+				HeightUnit: "m",
+			},
+			expectError: false,
+		},
+		{
+			name: "valid request with lb and ft",
+			req: &models.BMIRequest{
+				Weight:     154,
+				WeightUnit: "lb",
+				Height:     5.74,
+				HeightUnit: "ft",
+			},
+			expectError: false,
+		},
+		{
+			name:         "nil request",
+			req:          nil,
+			expectError:  true,
+			expectedCode: errors.ErrCodeInvalidInput,
+		},
+		{
+			name: "NaN weight",
+			req: &models.BMIRequest{
+				Weight:     math.NaN(),
+				WeightUnit: "kg",
+				Height:     1.75,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "Inf weight",
+			req: &models.BMIRequest{
+				Weight:     math.Inf(1),
+				WeightUnit: "kg",
+				Height:     1.75,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "zero weight",
+			req: &models.BMIRequest{
+				Weight:     0,
+				WeightUnit: "kg",
+				Height:     1.75,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "negative weight",
+			req: &models.BMIRequest{
+				Weight:     -70,
+				WeightUnit: "kg",
+				Height:     1.75,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "NaN height",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "kg",
+				Height:     math.NaN(),
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "Inf height",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "kg",
+				Height:     math.Inf(1),
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "zero height",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "kg",
+				Height:     0,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "negative height",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "kg",
+				Height:     -1.75,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "empty weight unit",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "",
+				Height:     1.75,
+				HeightUnit: "m",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "empty height unit",
+			req: &models.BMIRequest{
+				Weight:     70,
+				WeightUnit: "kg",
+				Height:     1.75,
+				HeightUnit: "",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateBMIRequest(tt.req)
+
+			if (err != nil) != tt.expectError {
+				t.Errorf("ValidateBMIRequest() error = %v, expectError %v", err, tt.expectError)
+				return
+			}
+
+			if tt.expectError && err.Code != tt.expectedCode {
+				t.Errorf("ValidateBMIRequest() error code = %v, expected %v", err.Code, tt.expectedCode)
+			}
+		})
+	}
+}
+
+func TestValidateUnitConversionRequest(t *testing.T) {
+	tests := []struct {
+		name         string
+		req          *models.UnitConversionRequest
+		expectError  bool
+		expectedCode string
+	}{
+		{
+			name: "valid weight conversion",
+			req: &models.UnitConversionRequest{
+				Value:    10,
+				FromUnit: "kg",
+				ToUnit:   "lb",
+				UnitType: "weight",
+			},
+			expectError: false,
+		},
+		{
+			name: "valid temperature conversion",
+			req: &models.UnitConversionRequest{
+				Value:    0,
+				FromUnit: "C",
+				ToUnit:   "F",
+				UnitType: "temperature",
+			},
+			expectError: false,
+		},
+		{
+			name: "valid distance conversion",
+			req: &models.UnitConversionRequest{
+				Value:    1,
+				FromUnit: "km",
+				ToUnit:   "mi",
+				UnitType: "distance",
+			},
+			expectError: false,
+		},
+		{
+			name:         "nil request",
+			req:          nil,
+			expectError:  true,
+			expectedCode: errors.ErrCodeInvalidInput,
+		},
+		{
+			name: "NaN value",
+			req: &models.UnitConversionRequest{
+				Value:    math.NaN(),
+				FromUnit: "kg",
+				ToUnit:   "lb",
+				UnitType: "weight",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "Inf value",
+			req: &models.UnitConversionRequest{
+				Value:    math.Inf(1),
+				FromUnit: "kg",
+				ToUnit:   "lb",
+				UnitType: "weight",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "empty from_unit",
+			req: &models.UnitConversionRequest{
+				Value:    10,
+				FromUnit: "",
+				ToUnit:   "lb",
+				UnitType: "weight",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "empty to_unit",
+			req: &models.UnitConversionRequest{
+				Value:    10,
+				FromUnit: "kg",
+				ToUnit:   "",
+				UnitType: "weight",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+		{
+			name: "empty unit_type",
+			req: &models.UnitConversionRequest{
+				Value:    10,
+				FromUnit: "kg",
+				ToUnit:   "lb",
+				UnitType: "",
+			},
+			expectError:  true,
+			expectedCode: errors.ErrCodeValidationError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateUnitConversionRequest(tt.req)
+
+			if (err != nil) != tt.expectError {
+				t.Errorf("ValidateUnitConversionRequest() error = %v, expectError %v", err, tt.expectError)
+				return
+			}
+
+			if tt.expectError && err.Code != tt.expectedCode {
+				t.Errorf("ValidateUnitConversionRequest() error code = %v, expected %v", err.Code, tt.expectedCode)
+			}
+		})
+	}
+}
