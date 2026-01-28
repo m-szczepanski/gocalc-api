@@ -137,11 +137,15 @@ func CalculateLoanPayment(principal, annualRate, years float64, paymentsPerYear 
 
 	totalPayments := years * float64(paymentsPerYear)
 
+	// Special case: zero interest rate
 	if annualRate == 0 {
 		paymentAmount := principal / totalPayments
 		paymentAmount = math.Round(paymentAmount*100) / 100
 		totalPayment := paymentAmount * totalPayments
-		return paymentAmount, totalPayment, 0, nil
+		totalPayment = math.Round(totalPayment*100) / 100
+		totalInterest := totalPayment - principal
+		totalInterest = math.Round(totalInterest*100) / 100
+		return paymentAmount, totalPayment, totalInterest, nil
 	}
 
 	ratePerPeriod := (annualRate / 100) / float64(paymentsPerYear)
