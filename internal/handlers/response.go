@@ -16,10 +16,6 @@ func writeJSON(w http.ResponseWriter, statusCode int, data interface{}) error {
 	return json.NewEncoder(w).Encode(data)
 }
 
-func writeError(w http.ResponseWriter, statusCode int, message string) error {
-	return writeJSON(w, statusCode, models.ErrorResponse{Error: message})
-}
-
 func writeErrorWithDetails(w http.ResponseWriter, r *http.Request, apiErr *apierrors.APIError) {
 	requestID := middleware.ExtractRequestID(r.Context())
 	statusCode := apiErr.HTTPStatus()

@@ -203,3 +203,89 @@ func ValidateLoanPaymentRequest(req *models.LoanPaymentRequest) *errors.APIError
 
 	return nil
 }
+
+func ValidateBMIRequest(req *models.BMIRequest) *errors.APIError {
+	if req == nil {
+		return errors.InvalidInput("request body is required")
+	}
+
+	if math.IsNaN(req.Weight) || math.IsInf(req.Weight, 0) {
+		return errors.ValidationError(
+			"invalid weight",
+			fmt.Sprintf("weight must be a valid number, got %v", req.Weight),
+		)
+	}
+
+	if req.Weight <= 0 {
+		return errors.ValidationError(
+			"invalid weight",
+			"weight must be greater than zero",
+		)
+	}
+
+	if math.IsNaN(req.Height) || math.IsInf(req.Height, 0) {
+		return errors.ValidationError(
+			"invalid height",
+			fmt.Sprintf("height must be a valid number, got %v", req.Height),
+		)
+	}
+
+	if req.Height <= 0 {
+		return errors.ValidationError(
+			"invalid height",
+			"height must be greater than zero",
+		)
+	}
+
+	if req.WeightUnit == "" {
+		return errors.ValidationError(
+			"invalid weight_unit",
+			"weight_unit is required",
+		)
+	}
+
+	if req.HeightUnit == "" {
+		return errors.ValidationError(
+			"invalid height_unit",
+			"height_unit is required",
+		)
+	}
+
+	return nil
+}
+
+func ValidateUnitConversionRequest(req *models.UnitConversionRequest) *errors.APIError {
+	if req == nil {
+		return errors.InvalidInput("request body is required")
+	}
+
+	if math.IsNaN(req.Value) || math.IsInf(req.Value, 0) {
+		return errors.ValidationError(
+			"invalid value",
+			fmt.Sprintf("value must be a valid number, got %v", req.Value),
+		)
+	}
+
+	if req.FromUnit == "" {
+		return errors.ValidationError(
+			"invalid from_unit",
+			"from_unit is required",
+		)
+	}
+
+	if req.ToUnit == "" {
+		return errors.ValidationError(
+			"invalid to_unit",
+			"to_unit is required",
+		)
+	}
+
+	if req.UnitType == "" {
+		return errors.ValidationError(
+			"invalid unit_type",
+			"unit_type is required (valid types: weight, height, temperature, distance, volume)",
+		)
+	}
+
+	return nil
+}

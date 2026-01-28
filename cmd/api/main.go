@@ -31,6 +31,9 @@ func main() {
 	mux.HandleFunc("/api/finance/compound-interest", handlers.CompoundInterestHandler)
 	mux.HandleFunc("/api/finance/loan-payment", handlers.LoanPaymentHandler)
 
+	mux.HandleFunc("/api/utils/bmi", handlers.BMIHandler)
+	mux.HandleFunc("/api/utils/unit-conversion", handlers.UnitConversionHandler)
+
 	var handler http.Handler = mux
 	handler = middleware.RequestIDMiddleware(handler)
 	handler = middleware.LoggingMiddleware(handler)
