@@ -22,11 +22,14 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", handlers.HealthHandler)
 
-	// Math endpoints
 	mux.HandleFunc("/api/math/add", handlers.AddHandler)
 	mux.HandleFunc("/api/math/subtract", handlers.SubtractHandler)
 	mux.HandleFunc("/api/math/multiply", handlers.MultiplyHandler)
 	mux.HandleFunc("/api/math/divide", handlers.DivideHandler)
+
+	mux.HandleFunc("/api/finance/vat", handlers.VATHandler)
+	mux.HandleFunc("/api/finance/compound-interest", handlers.CompoundInterestHandler)
+	mux.HandleFunc("/api/finance/loan-payment", handlers.LoanPaymentHandler)
 
 	var handler http.Handler = mux
 	handler = middleware.RequestIDMiddleware(handler)
