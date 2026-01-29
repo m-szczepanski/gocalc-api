@@ -20,6 +20,7 @@ This project was created **purely as a learning exercise** to explore Go as a ba
 - Every request contains all the information required to perform a calculation
 
 This makes the API:
+
 - Easy to scale
 - Simple to reason about
 - Perfect for learning backend fundamentals
@@ -36,15 +37,18 @@ This makes the API:
 ## Planned Features
 
 ### Mathematical Calculations
+
 - Addition, subtraction, multiplication, division
 - Factorials, percentages
 
 ### Financial Calculations
+
 - VAT calculation
 - Compound interest
 - Loan payment estimation
 
 ### Utility Calculations
+
 - BMI
 - Unit conversions
 
@@ -68,17 +72,18 @@ gocalc-api/
 ```
 
 ## Running the Project
+
 ```bash
 go run ./cmd/api
 ```
 
-## The API will start on:
+## The API will start on
 
 ```bash
 http://localhost:8080
 ```
 
-## Health check:
+## Health check
 
 ```bash
 curl http://localhost:8080/health
@@ -90,10 +95,22 @@ curl http://localhost:8080/health
 go test ./...
 ```
 
+## API Documentation
+
+See **[docs/API.md](docs/API.md)** for complete API documentation including endpoints, examples, and features.
+
+Quick resources:
+
+- **[API Documentation](docs/API.md)** - Complete endpoint documentation and quick start
+- **[OpenAPI Spec](docs/openapi.yaml)** - Full OpenAPI 3.0 specification
+- **[Examples](docs/examples.md)** - curl examples for every endpoint
+- **[Error Reference](docs/errors.md)** - Error codes and troubleshooting
+
 ## Why This Project Exists
 
-CalcForge is not meant to be a production-ready system.
+gocalc-api is not meant to be a production-ready system.
 It exists to:
+
 - Learn Go by doing
 - Experiment with API design
 - Make mistakes and fix them
