@@ -132,8 +132,6 @@ func writeErrorResponse(w http.ResponseWriter, apiErr *apierrors.APIError, r *ht
 	}
 }
 
-// TimeoutMiddleware enforces a timeout for request processing.
-// If a request exceeds the specified timeout, it returns a 503 Service Unavailable error.
 func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

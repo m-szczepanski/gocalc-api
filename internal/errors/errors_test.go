@@ -82,6 +82,7 @@ func TestHTTPStatus(t *testing.T) {
 		{ErrCodeDivisionByZero, http.StatusBadRequest},
 		{ErrCodeMethodNotAllowed, http.StatusMethodNotAllowed},
 		{ErrCodeInternalError, http.StatusInternalServerError},
+		{ErrCodeRateLimitExceeded, http.StatusTooManyRequests},
 		{"UNKNOWN_CODE", http.StatusBadRequest},
 	}
 
@@ -120,6 +121,11 @@ func TestErrorConstructors(t *testing.T) {
 			name:     "InternalError",
 			errFunc:  func() *APIError { return InternalError("test") },
 			wantCode: ErrCodeInternalError,
+		},
+		{
+			name:     "RateLimitExceeded",
+			errFunc:  func() *APIError { return RateLimitExceeded("test") },
+			wantCode: ErrCodeRateLimitExceeded,
 		},
 	}
 

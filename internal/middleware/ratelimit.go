@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -71,7 +72,11 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 				"path", r.URL.Path,
 			)
 
-			w.Header().Set("X-RateLimit-Limit", "100")
+			limitPerMinute := int(float64(rl.rate) * 60)
+			if limitPerMinute == 0 {
+				limitPerMinute = rl.burst
+			}
+			w.Header().Set("X-RateLimit-Limit", fmt.Sprintf("%d", limitPerMinute))
 			w.Header().Set("X-RateLimit-Remaining", "0")
 			w.Header().Set("Retry-After", "60")
 
@@ -85,20 +90,8 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 }
 
 func extractIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		if ip, _, err := net.SplitHostPort(xff); err == nil {
-			return ip
-		}
-		return xff
-	}
-
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return xri
-	}
-
 	if ip, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 		return ip
 	}
-
 	return r.RemoteAddr
 }

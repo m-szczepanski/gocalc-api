@@ -41,10 +41,10 @@ func main() {
 
 	var handler http.Handler = mux
 	handler = middleware.RequestIDMiddleware(handler)
+	handler = rateLimiter.Middleware(handler)
 	handler = middleware.TimeoutMiddleware(requestTimeout)(handler)
 	handler = middleware.LoggingMiddleware(handler)
 	handler = middleware.NewErrorHandler(handler)
-	handler = rateLimiter.Middleware(handler)
 
 	server := &http.Server{
 		Addr:         port,

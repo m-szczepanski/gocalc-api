@@ -214,40 +214,24 @@ func TestRateLimiter_Middleware_RecoveryAfterTime(t *testing.T) {
 
 func TestExtractIP(t *testing.T) {
 	tests := []struct {
-		name          string
-		remoteAddr    string
-		xForwardedFor string
-		xRealIP       string
-		expectedIP    string
+		name       string
+		remoteAddr string
+		expectedIP string
 	}{
 		{
-			name:       "from RemoteAddr",
+			name:       "from RemoteAddr with port",
 			remoteAddr: "192.168.1.1:12345",
 			expectedIP: "192.168.1.1",
 		},
 		{
-			name:          "from X-Forwarded-For",
-			remoteAddr:    "192.168.1.1:12345",
-			xForwardedFor: "203.0.113.1",
-			expectedIP:    "203.0.113.1",
-		},
-		{
-			name:       "from X-Real-IP",
-			remoteAddr: "192.168.1.1:12345",
-			xRealIP:    "203.0.113.2",
-			expectedIP: "203.0.113.2",
-		},
-		{
-			name:          "X-Forwarded-For takes precedence",
-			remoteAddr:    "192.168.1.1:12345",
-			xForwardedFor: "203.0.113.1",
-			xRealIP:       "203.0.113.2",
-			expectedIP:    "203.0.113.1",
-		},
-		{
-			name:       "RemoteAddr without port",
+			name:       "from RemoteAddr without port",
 			remoteAddr: "192.168.1.1",
 			expectedIP: "192.168.1.1",
+		},
+		{
+			name:       "IPv6 with port",
+			remoteAddr: "[2001:db8::1]:8080",
+			expectedIP: "2001:db8::1",
 		},
 	}
 
@@ -255,14 +239,6 @@ func TestExtractIP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/test", nil)
 			req.RemoteAddr = tt.remoteAddr
-
-			if tt.xForwardedFor != "" {
-				req.Header.Set("X-Forwarded-For", tt.xForwardedFor)
-			}
-
-			if tt.xRealIP != "" {
-				req.Header.Set("X-Real-IP", tt.xRealIP)
-			}
 
 			ip := extractIP(req)
 			if ip != tt.expectedIP {
