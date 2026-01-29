@@ -111,7 +111,6 @@ func TestRateLimiter_Middleware_BlocksExcessRequests(t *testing.T) {
 		t.Errorf("expected status 429, got %d", w.Code)
 	}
 
-	// Verify headers (rate is 1 req/sec = 60 req/min)
 	if w.Header().Get("X-RateLimit-Limit") != "60" {
 		t.Errorf("expected X-RateLimit-Limit header: 60, got %s", w.Header().Get("X-RateLimit-Limit"))
 	}
