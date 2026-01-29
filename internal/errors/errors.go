@@ -7,11 +7,12 @@ import (
 
 // Error codes used in API responses
 const (
-	ErrCodeInvalidInput     = "INVALID_INPUT"
-	ErrCodeValidationError  = "VALIDATION_ERROR"
-	ErrCodeDivisionByZero   = "DIVISION_BY_ZERO"
-	ErrCodeMethodNotAllowed = "METHOD_NOT_ALLOWED"
-	ErrCodeInternalError    = "INTERNAL_ERROR"
+	ErrCodeInvalidInput      = "INVALID_INPUT"
+	ErrCodeValidationError   = "VALIDATION_ERROR"
+	ErrCodeDivisionByZero    = "DIVISION_BY_ZERO"
+	ErrCodeMethodNotAllowed  = "METHOD_NOT_ALLOWED"
+	ErrCodeInternalError     = "INTERNAL_ERROR"
+	ErrCodeRateLimitExceeded = "RATE_LIMIT_EXCEEDED"
 )
 
 // APIError represents a structured error returned by the API.
@@ -59,6 +60,8 @@ func (e *APIError) HTTPStatus() int {
 		return http.StatusBadRequest
 	case ErrCodeMethodNotAllowed:
 		return http.StatusMethodNotAllowed
+	case ErrCodeRateLimitExceeded:
+		return http.StatusTooManyRequests
 	case ErrCodeInternalError:
 		return http.StatusInternalServerError
 	default:
@@ -91,4 +94,9 @@ func MethodNotAllowed(method string) *APIError {
 // InternalError returns an internal server error.
 func InternalError(message string) *APIError {
 	return NewAPIError(ErrCodeInternalError, message)
+}
+
+// RateLimitExceeded returns a rate limit exceeded error.
+func RateLimitExceeded(message string) *APIError {
+	return NewAPIError(ErrCodeRateLimitExceeded, message)
 }

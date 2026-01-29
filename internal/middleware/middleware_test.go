@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/m-szczepanski/gocalc-api/internal/models"
 )
@@ -268,4 +269,128 @@ func TestMiddlewareChain(t *testing.T) {
 	if w.Header().Get("X-Request-ID") == "" {
 		t.Error("expected X-Request-ID header")
 	}
+}
+
+func TestLoggingMiddleware_ResponseTracking(t *testing.T) {
+	tests := []struct {
+		name           string
+		statusCode     int
+		expectedStatus int
+	}{
+		{
+			name:           "success response",
+			statusCode:     http.StatusOK,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "error response",
+			statusCode:     http.StatusBadRequest,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "server error",
+			statusCode:     http.StatusInternalServerError,
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tt.statusCode)
+			})
+
+			middleware := LoggingMiddleware(handler)
+
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			ctx := context.WithValue(req.Context(), RequestIDKey, "test-123")
+			req = req.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			middleware.ServeHTTP(w, req)
+
+			if w.Code != tt.expectedStatus {
+				t.Errorf("expected status %d, got %d", tt.expectedStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestTimeoutMiddleware(t *testing.T) {
+	t.Run("request completes before timeout", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			time.Sleep(10 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("success"))
+		})
+
+		middleware := TimeoutMiddleware(100 * time.Millisecond)(handler)
+
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		ctx := context.WithValue(req.Context(), RequestIDKey, "test-123")
+		req = req.WithContext(ctx)
+		w := httptest.NewRecorder()
+
+		middleware.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("request times out", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			select {
+			case <-time.After(200 * time.Millisecond):
+				w.WriteHeader(http.StatusOK)
+			case <-r.Context().Done():
+				return
+			}
+		})
+
+		middleware := TimeoutMiddleware(50 * time.Millisecond)(handler)
+
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		ctx := context.WithValue(req.Context(), RequestIDKey, "test-123")
+		req = req.WithContext(ctx)
+		w := httptest.NewRecorder()
+
+		middleware.ServeHTTP(w, req)
+
+		if w.Code != http.StatusInternalServerError {
+			t.Errorf("expected status 500, got %d", w.Code)
+		}
+
+		var errResp models.APIErrorResponse
+		if err := json.Unmarshal(w.Body.Bytes(), &errResp); err != nil {
+			t.Fatalf("failed to unmarshal error response: %v", err)
+		}
+
+		if errResp.Code != "INTERNAL_ERROR" {
+			t.Errorf("expected error code INTERNAL_ERROR, got %s", errResp.Code)
+		}
+	})
+
+	t.Run("context cancellation is propagated", func(t *testing.T) {
+		contextCancelled := false
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			<-r.Context().Done()
+			contextCancelled = true
+		})
+
+		middleware := TimeoutMiddleware(50 * time.Millisecond)(handler)
+
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
+		ctx := context.WithValue(req.Context(), RequestIDKey, "test-123")
+		req = req.WithContext(ctx)
+		w := httptest.NewRecorder()
+
+		middleware.ServeHTTP(w, req)
+
+		time.Sleep(100 * time.Millisecond)
+
+		if !contextCancelled {
+			t.Error("expected context to be cancelled in handler")
+		}
+	})
 }

@@ -16,6 +16,9 @@ import (
 const (
 	port            = ":8080"
 	shutdownTimeout = 15 * time.Second
+	requestTimeout  = 30 * time.Second
+	rateLimitRPS    = 100.0 / 60.0
+	rateLimitBurst  = 20
 )
 
 func main() {
@@ -34,8 +37,12 @@ func main() {
 	mux.HandleFunc("/api/utils/bmi", handlers.BMIHandler)
 	mux.HandleFunc("/api/utils/unit-conversion", handlers.UnitConversionHandler)
 
+	rateLimiter := middleware.NewRateLimiter(rateLimitRPS, rateLimitBurst)
+
 	var handler http.Handler = mux
 	handler = middleware.RequestIDMiddleware(handler)
+	handler = rateLimiter.Middleware(handler)
+	handler = middleware.TimeoutMiddleware(requestTimeout)(handler)
 	handler = middleware.LoggingMiddleware(handler)
 	handler = middleware.NewErrorHandler(handler)
 
