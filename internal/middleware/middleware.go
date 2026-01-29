@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"time"
 
 	apierrors "github.com/m-szczepanski/gocalc-api/internal/errors"
 	"github.com/m-szczepanski/gocalc-api/internal/models"
@@ -86,13 +87,31 @@ func RequestIDMiddleware(next http.Handler) http.Handler {
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestID := ExtractRequestID(r.Context())
-		slog.Info("request received",
+		start := time.Now()
+
+		rw := &responseWriter{
+			ResponseWriter: w,
+			statusCode:     http.StatusOK,
+		}
+
+		slog.Info("request started",
 			"request_id", requestID,
 			"method", r.Method,
 			"path", r.URL.Path,
 			"remote_addr", r.RemoteAddr,
 		)
-		next.ServeHTTP(w, r)
+
+		next.ServeHTTP(rw, r)
+
+		duration := time.Since(start)
+		slog.Info("request completed",
+			"request_id", requestID,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"status", rw.statusCode,
+			"duration_ms", duration.Milliseconds(),
+			"remote_addr", r.RemoteAddr,
+		)
 	})
 }
 
@@ -113,8 +132,48 @@ func writeErrorResponse(w http.ResponseWriter, apiErr *apierrors.APIError, r *ht
 	}
 }
 
-// ExtractRequestID retrieves the request ID from context, or returns "unknown" if not found.
-// This is exported so other packages can access request IDs without duplicating logic.
+// TimeoutMiddleware enforces a timeout for request processing.
+// If a request exceeds the specified timeout, it returns a 503 Service Unavailable error.
+func TimeoutMiddleware(timeout time.Duration) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx, cancel := context.WithTimeout(r.Context(), timeout)
+			defer cancel()
+
+			r = r.WithContext(ctx)
+
+			done := make(chan struct{})
+			panicChan := make(chan interface{}, 1)
+
+			go func() {
+				defer func() {
+					if p := recover(); p != nil {
+						panicChan <- p
+					}
+				}()
+				next.ServeHTTP(w, r)
+				close(done)
+			}()
+
+			select {
+			case p := <-panicChan:
+				panic(p)
+			case <-done:
+				return
+			case <-ctx.Done():
+				requestID := ExtractRequestID(r.Context())
+				slog.Warn("request timeout",
+					"request_id", requestID,
+					"method", r.Method,
+					"path", r.URL.Path,
+					"timeout", timeout.String(),
+				)
+				writeErrorResponse(w, apierrors.InternalError("request timeout"), r)
+			}
+		})
+	}
+}
+
 func ExtractRequestID(ctx context.Context) string {
 	requestID, ok := ctx.Value(RequestIDKey).(string)
 	if !ok {
