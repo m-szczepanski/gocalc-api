@@ -1,0 +1,118 @@
+# golangci-lint configuration
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  go: '1.25.6'
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
+linters:
+  enable:
+    # Default linters
+    - errcheck        # Check for unchecked errors
+    - gosimple        # Simplify code
+    - govet           # Examine Go source code and reports suspicious constructs
+    - ineffassign     # Detect ineffectual assignments
+    - staticcheck     # Advanced Go linter
+    - unused          # Check for unused constants, variables, functions and types
+    
+    # Additional code quality linters
+    - gofmt           # Check whether code was gofmt-ed
+    - goimports       # Check import statements are formatted according to goimports
+    - misspell        # Finds commonly misspelled English words
+    - revive          # Fast, configurable, extensible, flexible, and beautiful linter for Go
+    - unconvert       # Remove unnecessary type conversions
+    - unparam         # Report unused function parameters
+    - gocyclo         # Compute cyclomatic complexity
+    - prealloc        # Find slice declarations that could potentially be pre-allocated
+    - bodyclose       # Check whether HTTP response body is closed successfully
+    - noctx           # Find sending HTTP request without context.Context
+    - goprintffuncname # Check that printf-like functions are named with f at the end
+    - exportloopref   # Check for pointers to enclosing loop variables
+    - whitespace      # Tool for detection of leading and trailing whitespace
+    
+  disable:
+    - typecheck       # Disabled as it can conflict with other tools
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - (io.Closer).Close
+      
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+      - fieldalignment  # Don't enforce struct field alignment (readability over micro-optimization)
+      
+  gocyclo:
+    min-complexity: 15
+    
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+      
+  gofmt:
+    simplify: true
+    
+  goimports:
+    local-prefixes: github.com/m-szczepanski/gocalc-api
+    
+  misspell:
+    locale: US
+    
+  whitespace:
+    multi-if: false
+    multi-func: false
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - gosec
+        - unparam
+        
+    # Exclude error wrapping check for custom error package
+    - path: internal/errors/
+      linters:
+        - wrapcheck
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: true
