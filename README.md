@@ -33,6 +33,8 @@ This makes the API:
 - **JSON:** `encoding/json`
 - **Testing:** `testing`, `httptest`
 - **Linting:** `golangci-lint`
+- **Build Automation:** `Makefile`
+- **Code Quality:** Pre-commit hooks
 
 ## Planned Features
 
@@ -71,29 +73,87 @@ gocalc-api/
 └── README.md
 ```
 
-## Running the Project
+## Quick Start
+
+### First-time setup
 
 ```bash
-go run ./cmd/api
+# Install development tools (golangci-lint)
+make install-tools
+
+# Set up git hooks for code quality checks
+make setup-hooks
 ```
 
-## The API will start on
+### Running the Project
 
 ```bash
-http://localhost:8080
+make run
 ```
 
-## Health check
+The API will start on `http://localhost:8080`
+
+### Health check
 
 ```bash
 curl http://localhost:8080/health
 ```
 
-## Testing
+### Testing
 
 ```bash
-go test ./...
+make test
 ```
+
+## Development Workflow
+
+The project includes a Makefile for common development tasks:
+
+```bash
+make help          # Show all available commands
+make build         # Build the binary to bin/gocalc-api
+make run           # Run the application
+make test          # Run all tests
+make test-coverage # Generate test coverage report
+make fmt           # Format code with gofmt
+make lint          # Run golangci-lint
+make vet           # Run go vet
+make check         # Run all checks (fmt, vet, lint, test)
+make clean         # Remove build artifacts
+make tidy          # Tidy go.mod and go.sum
+```
+
+### Pre-commit Hooks
+
+The project uses git hooks to ensure code quality before commits:
+
+1. **Setup** (first time only):
+
+   ```bash
+   make setup-hooks
+   ```
+
+2. **What runs automatically** on each commit:
+   - Code formatting check (`gofmt`)
+   - Go vet analysis
+   - golangci-lint checks
+   - go.mod tidiness verification
+
+3. **To bypass** hooks (not recommended):
+
+   ```bash
+   git commit --no-verify
+   ```
+
+### Code Quality
+
+Before pushing code, run all quality checks:
+
+```bash
+make check
+```
+
+This runs formatting checks, linting, vetting, and tests in one command.
 
 ## API Documentation
 
