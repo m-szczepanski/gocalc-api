@@ -18,6 +18,11 @@ BINARY_PATH=$(BINARY_DIR)/$(BINARY_NAME)
 # Main package path
 MAIN_PATH=./cmd/api
 
+# Docker configuration
+DOCKER_IMAGE=gocalc-api
+DOCKER_TAG?=latest
+DOCKER_PORT?=8080
+
 # golangci-lint version
 GOLANGCI_LINT_VERSION=v1.62.2
 
@@ -129,6 +134,48 @@ deps: ## Download dependencies
 	@echo "Downloading dependencies..."
 	$(GOGET) -v ./...
 	@echo "Dependencies downloaded"
+
+.PHONY: docker-build
+docker-build: ## Build Docker image
+	@echo "Building Docker image $(DOCKER_IMAGE):$(DOCKER_TAG)..."
+	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
+	@echo "Docker image built successfully"
+
+.PHONY: docker-run
+docker-run: ## Run Docker container
+	@echo "Running Docker container on port $(DOCKER_PORT)..."
+	docker run --rm -p $(DOCKER_PORT):8080 \
+		--name $(DOCKER_IMAGE) \
+		$(DOCKER_IMAGE):$(DOCKER_TAG)
+
+.PHONY: docker-run-detached
+docker-run-detached: ## Run Docker container in detached mode
+	@echo "Running Docker container in background on port $(DOCKER_PORT)..."
+	docker run -d -p $(DOCKER_PORT):8080 \
+		--name $(DOCKER_IMAGE) \
+		$(DOCKER_IMAGE):$(DOCKER_TAG)
+	@echo "Container started. Check logs with: docker logs $(DOCKER_IMAGE)"
+
+.PHONY: docker-stop
+docker-stop: ## Stop running Docker container
+	@echo "Stopping Docker container..."
+	docker stop $(DOCKER_IMAGE) || true
+	docker rm $(DOCKER_IMAGE) || true
+	@echo "Container stopped"
+
+.PHONY: docker-logs
+docker-logs: ## Show Docker container logs
+	docker logs -f $(DOCKER_IMAGE)
+
+.PHONY: docker-shell
+docker-shell: ## Open shell in running container
+	docker exec -it $(DOCKER_IMAGE) /bin/sh
+
+.PHONY: docker-clean
+docker-clean: ## Remove Docker image
+	@echo "Removing Docker image..."
+	docker rmi $(DOCKER_IMAGE):$(DOCKER_TAG) || true
+	@echo "Docker image removed"
 
 .PHONY: all
 all: clean build test ## Clean, build, and test
