@@ -87,16 +87,65 @@ make setup-hooks
 
 ### Running the Project
 
+#### Local Development
+
 ```bash
+# Run with default configuration
 make run
+
+# Run with custom port
+PORT=3000 make run
+
+# Run with custom configuration
+PORT=3000 RATE_LIMIT_RPM=200 REQUEST_TIMEOUT=45s make run
 ```
 
-The API will start on `http://localhost:8080`
+#### Docker
+
+```bash
+# Build Docker image
+make docker-build
+
+# Run in Docker
+make docker-run
+
+# Run in background
+make docker-run-detached
+
+# View logs
+make docker-logs
+
+# Stop container
+make docker-stop
+```
+
+The API will start on `http://localhost:8080` (or your configured port).
+
+### Configuration
+
+The application is configured via environment variables with sensible defaults:
+
+| Variable | Description | Default |
+| ---------- | ------------- | --------- |
+| `PORT` | HTTP server port | `8080` |
+| `READ_TIMEOUT` | HTTP read timeout | `10s` |
+| `WRITE_TIMEOUT` | HTTP write timeout | `10s` |
+| `IDLE_TIMEOUT` | HTTP idle timeout | `120s` |
+| `SHUTDOWN_TIMEOUT` | Graceful shutdown timeout | `15s` |
+| `REQUEST_TIMEOUT` | Request processing timeout | `30s` |
+| `RATE_LIMIT_RPM` | Rate limit (requests/min) | `100.0` |
+| `RATE_LIMIT_BURST` | Rate limit burst size | `20` |
+
+See **[docs/deployment.md](docs/deployment.md)** for complete deployment guide.
 
 ### Health check
 
 ```bash
+# Health endpoint (detailed status)
 curl http://localhost:8080/health
+
+# Readiness endpoint (for load balancers)
+curl http://localhost:8080/ready
 ```
 
 ### Testing
@@ -121,6 +170,14 @@ make vet           # Run go vet
 make check         # Run all checks (fmt, vet, lint, test)
 make clean         # Remove build artifacts
 make tidy          # Tidy go.mod and go.sum
+
+# Docker commands
+make docker-build          # Build Docker image
+make docker-run            # Run Docker container
+make docker-run-detached   # Run in background
+make docker-stop           # Stop container
+make docker-logs           # View logs
+make docker-clean          # Remove image
 ```
 
 ### Pre-commit Hooks
@@ -162,6 +219,7 @@ See **[docs/API.md](docs/API.md)** for complete API documentation including endp
 Quick resources:
 
 - **[API Documentation](docs/API.md)** - Complete endpoint documentation and quick start
+- **[Deployment Guide](docs/deployment.md)** - Docker, Kubernetes, and cloud deployment
 - **[OpenAPI Spec](docs/openapi.yaml)** - Full OpenAPI 3.0 specification
 - **[Examples](docs/examples.md)** - curl examples for every endpoint
 - **[Error Reference](docs/errors.md)** - Error codes and troubleshooting

@@ -466,7 +466,7 @@ curl -X POST http://localhost:8080/api/utils/bmi \
 
 Convert values between different units.
 
-**Temperature: Celsius to Fahrenheit**
+#### Temperature: Celsius to Fahrenheit
 
 ```bash
 curl -X POST http://localhost:8080/api/utils/unit-conversion \
@@ -494,7 +494,7 @@ curl -X POST http://localhost:8080/api/utils/unit-conversion \
 }
 ```
 
-**Weight: Kilograms to Pounds**
+#### Weight: Kilograms to Pounds
 
 ```bash
 curl -X POST http://localhost:8080/api/utils/unit-conversion \
@@ -522,7 +522,7 @@ curl -X POST http://localhost:8080/api/utils/unit-conversion \
 }
 ```
 
-**Distance: Miles to Kilometers**
+#### Distance: Miles to Kilometers
 
 ```bash
 curl -X POST http://localhost:8080/api/utils/unit-conversion \
@@ -550,7 +550,7 @@ curl -X POST http://localhost:8080/api/utils/unit-conversion \
 }
 ```
 
-**Volume: Liters to Gallons**
+#### Volume: Liters to Gallons
 
 ```bash
 curl -X POST http://localhost:8080/api/utils/unit-conversion \
@@ -578,7 +578,7 @@ curl -X POST http://localhost:8080/api/utils/unit-conversion \
 }
 ```
 
-**Height: Feet to Meters**
+#### Height: Feet to Meters
 
 ```bash
 curl -X POST http://localhost:8080/api/utils/unit-conversion \
@@ -609,7 +609,7 @@ curl -X POST http://localhost:8080/api/utils/unit-conversion \
 #### Supported Units
 
 | Unit Type | Supported Units |
-|-----------|----------------|
+| ---------- | ---------------- |
 | **weight** | kg, g, lb, oz |
 | **height** | m, cm, ft, in |
 | **temperature** | C, F, K (case-insensitive) |

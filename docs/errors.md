@@ -19,7 +19,7 @@ All errors follow a consistent JSON structure:
 ### Fields
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| ------- | ------ | ---------- | ------------- |
 | `code` | string | Yes | Machine-readable error code |
 | `message` | string | Yes | Human-readable error description |
 | `details` | string | No | Additional context about the error |
@@ -354,7 +354,7 @@ done
 ## HTTP Status Code Summary
 
 | Status Code | Error Code(s) | Description |
-|-------------|---------------|-------------|
+| ------------- | --------------- | ------------- |
 | 400 | INVALID_INPUT, VALIDATION_ERROR, DIVISION_BY_ZERO | Bad Request - Client error |
 | 405 | METHOD_NOT_ALLOWED | Method Not Allowed |
 | 429 | RATE_LIMIT_EXCEEDED | Too Many Requests |

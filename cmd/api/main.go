@@ -2,28 +2,27 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
+	"github.com/m-szczepanski/gocalc-api/internal/config"
 	"github.com/m-szczepanski/gocalc-api/internal/handlers"
 	"github.com/m-szczepanski/gocalc-api/internal/middleware"
 )
 
-const (
-	port            = ":8080"
-	shutdownTimeout = 15 * time.Second
-	requestTimeout  = 30 * time.Second
-	rateLimitRPS    = 100.0 / 60.0
-	rateLimitBurst  = 20
-)
-
 func main() {
+	// Load configuration from environment variables
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", handlers.HealthHandler)
+	mux.HandleFunc("/ready", handlers.ReadinessHandler)
 
 	mux.HandleFunc("/api/math/add", handlers.AddHandler)
 	mux.HandleFunc("/api/math/subtract", handlers.SubtractHandler)
@@ -37,25 +36,29 @@ func main() {
 	mux.HandleFunc("/api/utils/bmi", handlers.BMIHandler)
 	mux.HandleFunc("/api/utils/unit-conversion", handlers.UnitConversionHandler)
 
-	rateLimiter := middleware.NewRateLimiter(rateLimitRPS, rateLimitBurst)
+	// Configure rate limiter with requests per second (RPM / 60)
+	rps := cfg.RateLimit.RequestsPerMinute / 60.0
+	rateLimiter := middleware.NewRateLimiter(rps, cfg.RateLimit.Burst)
 
 	var handler http.Handler = mux
 	handler = middleware.RequestIDMiddleware(handler)
 	handler = rateLimiter.Middleware(handler)
-	handler = middleware.TimeoutMiddleware(requestTimeout)(handler)
+	handler = middleware.TimeoutMiddleware(cfg.Server.RequestTimeout)(handler)
 	handler = middleware.LoggingMiddleware(handler)
 	handler = middleware.NewErrorHandler(handler)
 
+	// Configure server with timeouts from config
+	addr := fmt.Sprintf(":%s", cfg.Server.Port)
 	server := &http.Server{
-		Addr:         port,
+		Addr:         addr,
 		Handler:      handler,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
 	go func() {
-		log.Printf("API running on %s", port)
+		log.Printf("API running on %s", addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
@@ -67,8 +70,8 @@ func main() {
 	<-sigChan
 	log.Println("Shutting down server...")
 
-	// Create a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	// Create a context with timeout from config
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Server.ShutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
