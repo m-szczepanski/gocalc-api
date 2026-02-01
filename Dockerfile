@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
@@ -18,7 +18,10 @@ COPY . .
 
 # Build the application
 # -ldflags="-s -w" strips debug information for smaller binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+# Use BuildKit args for multi-platform support
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -ldflags="-s -w" \
     -o gocalc-api \
     ./cmd/api
@@ -47,10 +50,6 @@ USER appuser
 
 # Expose port (default 8080, configurable via PORT env var)
 EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Run the application
 CMD ["./gocalc-api"]

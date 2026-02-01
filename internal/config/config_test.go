@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"testing"
 	"time"
 )
@@ -147,12 +146,9 @@ func TestLoad(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Clear environment
-			os.Clearenv()
-
-			// Set test environment variables
+			// Set test environment variables (auto-restored after test)
 			for k, v := range tt.envVars {
-				os.Setenv(k, v)
+				t.Setenv(k, v)
 			}
 
 			got, err := Load()
@@ -220,6 +216,60 @@ func TestValidate(t *testing.T) {
 			config: &Config{
 				Server: ServerConfig{
 					Port:            "",
+					ReadTimeout:     10 * time.Second,
+					WriteTimeout:    10 * time.Second,
+					IdleTimeout:     120 * time.Second,
+					ShutdownTimeout: 15 * time.Second,
+					RequestTimeout:  30 * time.Second,
+				},
+				RateLimit: RateLimitConfig{
+					RequestsPerMinute: 100.0,
+					Burst:             20,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid port - non-numeric",
+			config: &Config{
+				Server: ServerConfig{
+					Port:            "abc",
+					ReadTimeout:     10 * time.Second,
+					WriteTimeout:    10 * time.Second,
+					IdleTimeout:     120 * time.Second,
+					ShutdownTimeout: 15 * time.Second,
+					RequestTimeout:  30 * time.Second,
+				},
+				RateLimit: RateLimitConfig{
+					RequestsPerMinute: 100.0,
+					Burst:             20,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid port - too low",
+			config: &Config{
+				Server: ServerConfig{
+					Port:            "0",
+					ReadTimeout:     10 * time.Second,
+					WriteTimeout:    10 * time.Second,
+					IdleTimeout:     120 * time.Second,
+					ShutdownTimeout: 15 * time.Second,
+					RequestTimeout:  30 * time.Second,
+				},
+				RateLimit: RateLimitConfig{
+					RequestsPerMinute: 100.0,
+					Burst:             20,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid port - too high",
+			config: &Config{
+				Server: ServerConfig{
+					Port:            "65536",
 					ReadTimeout:     10 * time.Second,
 					WriteTimeout:    10 * time.Second,
 					IdleTimeout:     120 * time.Second,

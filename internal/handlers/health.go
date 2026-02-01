@@ -40,7 +40,9 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 		Checks:    checks,
 	}
 
-	writeSuccessResponse(w, r, response)
+	if err := writeSuccessResponse(w, r, response); err != nil {
+		return
+	}
 }
 
 // ReadinessHandler indicates if the service is ready to accept traffic.
@@ -52,7 +54,9 @@ func ReadinessHandler(w http.ResponseWriter, r *http.Request) {
 		Status: "ready",
 	}
 
-	writeSuccessResponse(w, r, response)
+	if err := writeSuccessResponse(w, r, response); err != nil {
+		return
+	}
 }
 
 // checkMemory returns memory usage information.

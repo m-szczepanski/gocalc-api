@@ -126,7 +126,7 @@ The API will start on `http://localhost:8080` (or your configured port).
 The application is configured via environment variables with sensible defaults:
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | `PORT` | HTTP server port | `8080` |
 | `READ_TIMEOUT` | HTTP read timeout | `10s` |
 | `WRITE_TIMEOUT` | HTTP write timeout | `10s` |

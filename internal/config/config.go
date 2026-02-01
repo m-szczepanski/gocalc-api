@@ -56,35 +56,40 @@ func Load() (*Config, error) {
 // validate checks that configuration values are sensible.
 func (c *Config) validate() error {
 	if c.Server.Port == "" {
-		return fmt.Errorf("PORT cannot be empty")
+		return fmt.Errorf("invalid PORT: cannot be empty")
+	}
+
+	// Validate port is a valid number between 1-65535
+	if port, err := strconv.Atoi(c.Server.Port); err != nil || port < 1 || port > 65535 {
+		return fmt.Errorf("invalid PORT: must be a number between 1 and 65535")
 	}
 
 	if c.Server.ReadTimeout <= 0 {
-		return fmt.Errorf("READ_TIMEOUT must be positive")
+		return fmt.Errorf("invalid READ_TIMEOUT: must be positive")
 	}
 
 	if c.Server.WriteTimeout <= 0 {
-		return fmt.Errorf("WRITE_TIMEOUT must be positive")
+		return fmt.Errorf("invalid WRITE_TIMEOUT: must be positive")
 	}
 
 	if c.Server.IdleTimeout <= 0 {
-		return fmt.Errorf("IDLE_TIMEOUT must be positive")
+		return fmt.Errorf("invalid IDLE_TIMEOUT: must be positive")
 	}
 
 	if c.Server.ShutdownTimeout <= 0 {
-		return fmt.Errorf("SHUTDOWN_TIMEOUT must be positive")
+		return fmt.Errorf("invalid SHUTDOWN_TIMEOUT: must be positive")
 	}
 
 	if c.Server.RequestTimeout <= 0 {
-		return fmt.Errorf("REQUEST_TIMEOUT must be positive")
+		return fmt.Errorf("invalid REQUEST_TIMEOUT: must be positive")
 	}
 
 	if c.RateLimit.RequestsPerMinute <= 0 {
-		return fmt.Errorf("RATE_LIMIT_RPM must be positive")
+		return fmt.Errorf("invalid RATE_LIMIT_RPM: must be positive")
 	}
 
 	if c.RateLimit.Burst <= 0 {
-		return fmt.Errorf("RATE_LIMIT_BURST must be positive")
+		return fmt.Errorf("invalid RATE_LIMIT_BURST: must be positive")
 	}
 
 	return nil
