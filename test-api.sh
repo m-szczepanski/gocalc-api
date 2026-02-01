@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # gocalc-api Comprehensive API Testing Script
 # This script tests all endpoints with various scenarios
@@ -22,6 +22,22 @@ echo -e "${BLUE}║     gocalc-api Comprehensive API Test Suite          ║${NC
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "Testing API at: ${YELLOW}${BASE_URL}${NC}"
+echo ""
+
+# Pre-flight checks
+if ! command -v curl &> /dev/null; then
+    echo -e "${RED}Error: curl is not installed. Please install curl to run these tests.${NC}"
+    exit 1
+fi
+
+echo -n "Checking API accessibility... "
+if ! curl -s -f "$BASE_URL/health" > /dev/null 2>&1; then
+    echo -e "${RED}FAIL${NC}"
+    echo -e "${RED}Error: API is not accessible at $BASE_URL${NC}"
+    echo -e "${YELLOW}Make sure the API is running with: make run${NC}"
+    exit 1
+fi
+echo -e "${GREEN}OK${NC}"
 echo ""
 
 # Function to test an endpoint

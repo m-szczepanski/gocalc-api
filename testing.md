@@ -176,19 +176,19 @@ curl -X POST http://localhost:8080/api/finance/vat \
 # Annual compounding
 curl -X POST http://localhost:8080/api/finance/compound-interest \
   -H "Content-Type: application/json" \
-  -d '{"principal": 1000.0, "rate": 5.0, "time": 10.0, "frequency": 1}'
+  -d '{"principal": 1000.0, "rate": 5.0, "time": 10.0, "compound_frequency": 1}'
 # Expected: final_amount, interest_earned
 
 # Monthly compounding
 curl -X POST http://localhost:8080/api/finance/compound-interest \
   -H "Content-Type: application/json" \
-  -d '{"principal": 5000.0, "rate": 3.5, "time": 5.0, "frequency": 12}'
+  -d '{"principal": 5000.0, "rate": 3.5, "time": 5.0, "compound_frequency": 12}'
 # Expected: final_amount, interest_earned
 
 # Daily compounding
 curl -X POST http://localhost:8080/api/finance/compound-interest \
   -H "Content-Type: application/json" \
-  -d '{"principal": 10000.0, "rate": 2.0, "time": 2.0, "frequency": 365}'
+  -d '{"principal": 10000.0, "rate": 2.0, "time": 2.0, "compound_frequency": 365}'
 # Expected: final_amount, interest_earned
 ```
 
@@ -198,19 +198,19 @@ curl -X POST http://localhost:8080/api/finance/compound-interest \
 # Mortgage (30 years)
 curl -X POST http://localhost:8080/api/finance/loan-payment \
   -H "Content-Type: application/json" \
-  -d '{"principal": 200000.0, "annual_rate": 4.5, "years": 30}'
+  -d '{"principal": 200000.0, "annual_rate": 4.5, "years": 30, "payments_per_year": 12}'
 # Expected: monthly_payment, total_payment, total_interest
 
 # Car loan (5 years)
 curl -X POST http://localhost:8080/api/finance/loan-payment \
   -H "Content-Type: application/json" \
-  -d '{"principal": 25000.0, "annual_rate": 6.0, "years": 5}'
+  -d '{"principal": 25000.0, "annual_rate": 6.0, "years": 5, "payments_per_year": 12}'
 # Expected: monthly_payment, total_payment, total_interest
 
 # Short-term loan (2 years)
 curl -X POST http://localhost:8080/api/finance/loan-payment \
   -H "Content-Type: application/json" \
-  -d '{"principal": 5000.0, "annual_rate": 8.0, "years": 2}'
+  -d '{"principal": 5000.0, "annual_rate": 8.0, "years": 2, "payments_per_year": 12}'
 # Expected: monthly_payment, total_payment, total_interest
 ```
 
@@ -451,7 +451,7 @@ docker run --rm -d -p 8080:8080 \
 
 ## Summary Checklist
 
-- [ ] All 272 unit tests pass (`make test`)
+- [ ] All unit tests pass (`make test`)
 - [ ] Code quality checks pass (`make check`)
 - [ ] Automated API tests pass (`./test-api.sh`)
 - [ ] Health endpoints respond correctly
