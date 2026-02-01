@@ -198,7 +198,7 @@ All POST endpoints require `Content-Type: application/json` header.
 The `/api/utils/unit-conversion` endpoint supports the following unit types:
 
 | Unit Type | Supported Units |
-|-----------|----------------|
+| ----------- | ---------------- |
 | **weight** | kg, g, lb, oz |
 | **height** | m, cm, ft, in |
 | **temperature** | C, F, K (case-insensitive) |
@@ -219,7 +219,7 @@ The BMI endpoint categorizes results as:
 ## Common Error Codes
 
 | Code | HTTP Status | Description |
-|------|-------------|-------------|
+| ------ | ------------- | ------------- |
 | `INVALID_INPUT` | 400 | Malformed JSON or invalid request body |
 | `VALIDATION_ERROR` | 400 | Field validation failed |
 | `DIVISION_BY_ZERO` | 400 | Attempted division by zero |
