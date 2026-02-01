@@ -4,8 +4,6 @@
 # This script tests all endpoints with various scenarios
 # Make sure the API is running on http://localhost:8080 before executing
 
-set -e
-
 BASE_URL="${API_URL:-http://localhost:8080}"
 FAILED=0
 PASSED=0
@@ -75,35 +73,6 @@ test_endpoint() {
         sleep 0.65
         return 1
     fi
-}
-
-# Function to show response
-show_response() {
-    local name="$1"
-    local method="$2"
-    local endpoint="$3"
-    local data="$4"
-    
-    echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${YELLOW}$name${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    
-    if [ "$method" = "GET" ]; then
-        echo -e "\n${BLUE}Request:${NC}"
-        echo "curl $BASE_URL$endpoint"
-        echo -e "\n${BLUE}Response:${NC}"
-        curl -s "$BASE_URL$endpoint" | jq '.' 2>/dev/null || curl -s "$BASE_URL$endpoint"
-    else
-        echo -e "\n${BLUE}Request:${NC}"
-        echo "curl -X $method $BASE_URL$endpoint \\"
-        echo "  -H \"Content-Type: application/json\" \\"
-        echo "  -d '$data'"
-        echo -e "\n${BLUE}Response:${NC}"
-        curl -s -X "$method" "$BASE_URL$endpoint" \
-            -H "Content-Type: application/json" \
-            -d "$data" | jq '.' 2>/dev/null || echo "Failed to parse JSON"
-    fi
-    echo ""
 }
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"

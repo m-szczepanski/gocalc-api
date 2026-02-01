@@ -1,6 +1,6 @@
-# gocalc-api Manual Testing Guide
+# gocalc-api Testing Guide
 
-Comprehensive manual testing checklist for all API endpoints and functionalities.
+Comprehensive testing guide and manual checklist for all API endpoints and functionalities.
 
 ## Prerequisites
 
