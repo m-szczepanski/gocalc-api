@@ -29,7 +29,7 @@ linters:
     - bodyclose       # Check whether HTTP response body is closed successfully
     - noctx           # Find sending HTTP request without context.Context
     - goprintffuncname # Check that printf-like functions are named with f at the end
-    - exportloopref   # Check for pointers to enclosing loop variables
+    - copyloopvar     # Check for pointers to enclosing loop variables
     - whitespace      # Tool for detection of leading and trailing whitespace
     
   disable:
@@ -102,13 +102,7 @@ issues:
       linters:
         - gocyclo
         - errcheck
-        - gosec
         - unparam
-        
-    # Exclude error wrapping check for custom error package
-    - path: internal/errors/
-      linters:
-        - wrapcheck
 
 output:
   format: colored-line-number

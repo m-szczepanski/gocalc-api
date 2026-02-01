@@ -56,7 +56,6 @@ fi
 echo "${GREEN}go.mod check passed${NC}"
 
 # Run tests
-Uncomment the following lines if you want to run tests before every commit
 echo "${YELLOW}[5/5]${NC} Running tests..."
 if ! go test -short ./...; then
     echo "${RED}Tests failed${NC}"

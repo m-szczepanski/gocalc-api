@@ -62,7 +62,10 @@ test-coverage: ## Run tests with coverage report
 .PHONY: test-coverage-view
 test-coverage-view: test-coverage ## Run tests with coverage and open report in browser
 	@echo "Opening coverage report..."
-	open coverage.html
+	@if command -v xdg-open >/dev/null 2>&1; then xdg-open coverage.html; \
+	elif command -v open >/dev/null 2>&1; then open coverage.html; \
+	elif command -v start >/dev/null 2>&1; then start coverage.html; \
+	else echo "Please open coverage.html manually."; fi
 
 .PHONY: fmt
 fmt: ## Format code with gofmt
